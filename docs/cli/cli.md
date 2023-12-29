@@ -4,7 +4,7 @@
 
 Postgres try to get user **role** from command line user and try to get a **role database**
 
-### How to manage users
+### How to manage users?
 
 ```
 adduser --disabled-password <username>
@@ -29,55 +29,64 @@ userdel -f <username>
 ### psql
 
 ```
-psql -U <username> <database>
-```
-or logged in
-```
-psql <database>
-```
-or logged in and db_name ad role_name
-```
-psql
+psql -U <auth_username> <database>
+
+
+psql <database>  # if authorized user 
+
+
+psql  # if authorized user and db_name as authorized username    
 ```
 
-### createdb
+### createdb / dropdb
 
 ```
-createdb -U <username> <database>
+createdb -U <auth_username> <database>
 ```
 
-### dropdb
+```
+dropdb -U <auth_username> <database>
+```
+
+### createuser / dropuser
 
 ```
-dropdb -U <username> <database>
+createuser -U <auth_username> <username>
+```
+
+```
+dropuser -U <auth_username> <username>
 ```
 
 ## Working in database
 
-Quit
 ```
-\q
-```
+\h, \? - help
 
-Display all commands or info about single command
-```
-\h
-```
-```
-\h ABORT
-```
+         
+\q, \c - connect, quit
 
-List dbs or info about single db
-```
-\l
-```
-```
-\l+
-```
-```
-\l <database>
-```
-On/Off expanded info mode
-```
-\x
+
+\l, \l <db_name> - List of db
+
+
+\d - Lit of tables, viewsm sequences
+
+
+\dn - List of schemas
+
+
+\dt, \d <tb_name> - List of tables
+
+
+\dv - List of views
+
+
+\df - List of fuctions
+
+
+\du - List of roles
+
+
+\i <sql_file> - Execute sql script
 ```

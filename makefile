@@ -7,3 +7,5 @@ run:
 
 restart: clean run
 
+in:
+	docker exec -it db /bin/bash
