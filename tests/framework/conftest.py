@@ -1,24 +1,33 @@
 import pytest
+from fastapi import FastAPI
 
-from src.framework.routes.application.ports import (
-    IAnnotationValidator,
-    IRouteService,
-    Decorator,
+from src.framework.container import FirstAPI
+
+
+def get_fastapi_app() -> FastAPI:
+    app = FastAPI()
+    return app
+
+
+def get_firstapi_app() -> FirstAPI:
+    app = FirstAPI()
+    return app
+
+
+parametrize_two_apps = pytest.mark.parametrize(
+    "app",
+    (
+        get_fastapi_app(),
+        get_firstapi_app(),
+    ),
 )
-from src.framework.routes.application.routes import DefaultRouteService
-from src.framework.routes.validator import DefaultAnnotationValidator
 
 
 @pytest.fixture
-def annotation_validator() -> IAnnotationValidator:
-    return DefaultAnnotationValidator()
+def fastapi_app() -> FastAPI:
+    return get_fastapi_app()
 
 
 @pytest.fixture
-def route_service() -> IRouteService:
-    return DefaultRouteService()
-
-
-@pytest.fixture
-def route(annotation_validator, route_service) -> Decorator:
-    return DefaultRouteService.get_route(annotation_validator)
+def firstapi_app() -> FirstAPI:
+    return get_firstapi_app()

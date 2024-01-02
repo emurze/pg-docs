@@ -1,11 +1,11 @@
 import abc
 from collections.abc import Callable
-from typing import Any, NewType
+from typing import Any, NewType, Protocol
 
 from src.framework.routes.application.dto import ValidatedDTO
 
 
-Decorator = NewType("Decorator", Callable)  # type: ignore
+Decorator = NewType("Decorator", Callable)
 
 
 class IAnnotationValidator(abc.ABC):
@@ -18,8 +18,9 @@ class IAnnotationValidator(abc.ABC):
         ...
 
 
-class IRouteService(abc.ABC):
-    @staticmethod
+class IRouteService(Protocol):
+    annotation_validator: IAnnotationValidator
+
     @abc.abstractmethod
-    def get_route(annotation_validator: IAnnotationValidator) -> Decorator:
+    def get_route(self) -> Decorator:
         """This factory method returns route decorator"""

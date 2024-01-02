@@ -1,68 +1,73 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
-from pydantic import BaseModel, ValidationError, PydanticUserError
+from pydantic import BaseModel, ValidationError
 
 from src.framework.helpers.get_annotations import get_annotations
 from src.framework.helpers.get_sliced_dict import get_sliced_dict
-from src.framework.routes.application.dto import ValidatedDTO
 from src.framework.routes.application.ports import IAnnotationValidator
 
 
-class DefaultAnnotationValidator(IAnnotationValidator):
-    @staticmethod
-    def _validate_annotation(value: Any, annotation: Any) -> dict:
+class AnnotationValidator(IAnnotationValidator):
+    errors = {}
+
+    def _validate_annotation(
+        self, value: Any, annotation: Any, metadata: dict
+    ) -> None:
         if isinstance(value, annotation):
-            return {"value": value}
+            return
 
         if issubclass(annotation, BaseModel):
-            try:
-                value = annotation(**value)
-                return {"value": value}
-            except (ValidationError, PydanticUserError) as err:
-                return {"error": f"{err}"}
-        else:
-            return {"error": f"{value} is not of type {type(annotation)}"}
+            if isinstance(value, Mapping):
+                try:
+                    annotation(**value)
+                    return
+                except ValidationError:
+                    self.errors |= {
+                        "message": "Data is not for a BaseModel subclass",
+                        "metadata": metadata,
+                    }
+                    return
+            else:
+                self.errors |= {
+                    "message": f"Value {value} doesn't support mapping",
+                    "metadata": metadata,
+                }
+                return
 
-    def _validate_args(self, args: tuple, annotations: dict) -> dict:
-        valid_args, errors = [], []
+        self.errors |= {
+            "message": f"Value {value} is not of type {type(annotation)}",
+            "metadata": metadata,
+        }
 
-        # if difference < 0: ...
-
+    def _validate_args(self, args: tuple, annotations: dict) -> None:
         for value, annotation in zip(args, annotations.values(), strict=False):
-            if data := self._validate_annotation(value, annotation):
-                if value := data.get("value"):
-                    valid_args.append(value)
-                if error := data.get("error"):
-                    errors.append(error)
+            self._validate_annotation(
+                value,
+                annotation,
+                metadata={
+                    "value": value,
+                },
+            )
 
-        return {"args": valid_args, "errors": errors}
-
-    def _validate_kwargs(self, kwargs: dict, annotations: dict) -> dict:
-        valid_kwargs, errors = {}, []
-
+    def _validate_kwargs(self, kwargs: dict, annotations: dict) -> None:
         for name, value in kwargs.items():
             if annotation := annotations.get(name):
-                if data := self._validate_annotation(value, annotation):
-                    if value := data.get("value"):
-                        valid_kwargs[name] = value
-                    if error := data.get("error"):
-                        errors.append(error)
+                self._validate_annotation(
+                    value,
+                    annotation,
+                    metadata={
+                        "value": value,
+                        "name": name,
+                    },
+                )
             else:
-                errors.append("This argument wasn't defined in function.")
+                raise ValueError(f"Argument for {name} does not exist")
 
-        return {"kwargs": valid_kwargs, "errors": errors}
-
-    def validate(self, func: Callable, args: Any, kwargs: Any) -> ValidatedDTO:
+    def validate(self, func: Callable, args: Any, kwargs: Any) -> dict:
         annotations = get_annotations(func)
         kwargs_annotations = get_sliced_dict(annotations, len(args))
 
-        args_data = self._validate_args(args, annotations)
-        kwargs_data = self._validate_kwargs(kwargs, kwargs_annotations)
-
-        validated_data = {
-            "args": args_data["args"],
-            "kwargs": kwargs_data["kwargs"],
-            "errors": args_data["errors"] + kwargs_data["errors"],
-        }
-        return ValidatedDTO(**validated_data)
+        self._validate_args(args, annotations)
+        self._validate_kwargs(kwargs, kwargs_annotations)
+        return self.errors

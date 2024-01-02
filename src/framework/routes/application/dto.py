@@ -1,5 +1,3 @@
-from collections.abc import Iterator
-
 from pydantic import BaseModel
 
 

@@ -8,3 +8,8 @@ def get_annotations(obj: Any) -> dict:
     with suppress(KeyError):
         annotations.pop("return")
     return annotations
+
+
+def get_return_annotation(obj: Any) -> type | None:
+    annotations = inspect.get_annotations(obj)
+    return annotations.get("return")

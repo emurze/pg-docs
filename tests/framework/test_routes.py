@@ -1,28 +1,26 @@
-from src.billy_shop.domain import User
-from src.framework.routes.application.ports import Decorator
+from typing import Any
+
+import pytest
+from pydantic import BaseModel
+from tests.framework.conftest import parametrize_two_apps
 
 
-def test_get_route_base_model_success(route: Decorator, user: User) -> None:
-    @route("/")
-    def some_func(param1: int, some_user: User) -> dict:
-        return {
-            "param1": param1,
-            "user_id": some_user.id,
-        }
-
-    assert some_func(1, some_user=user)
+class Trade(BaseModel):
+    id: int
+    price: float
 
 
-def test_get_route_dict_success(route: Decorator) -> None:
-    user_dict = {
-        "id": 1,
-    }
+success_trade = {"id": 23, "price": 1.335}
+failure_trade = {"id": 12, "price": "ef"}
 
-    @route("/")
-    def some_func(param1: int, some_user: User) -> dict:
-        return {
-            "param1": param1,
-            "user_id": some_user.id,
-        }
 
-    assert some_func(1, some_user=user_dict)
+@parametrize_two_apps
+@pytest.mark.parametrize(
+    "new_trade", ({"id": 23, "price": 1.335}, {"id": 12, "price": "ef"})
+)
+def test_trade_validation_success(app: Any, new_trade: dict) -> None:
+    @app.get("/")
+    def some_func(trade: Trade) -> dict:
+        return {"id": trade["id"], "price": trade["price"]}
+
+    response = some_func(trade=new_trade)  # noqa
