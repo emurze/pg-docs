@@ -2,8 +2,8 @@ import socket
 import ssl
 from dataclasses import dataclass
 
-from src.framework.server.domain import Request
-from src.framework.server.ports import ISocket
+from src.framework.browser.domain import Request
+from src.framework.browser.application.ports import ISocket
 
 
 @dataclass(frozen=True)

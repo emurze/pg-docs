@@ -1,12 +1,10 @@
-from typing import Literal, ClassVar
+from typing import ClassVar
 
 from pydantic import BaseModel
 
-Method = Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
-
 
 class FirstLine(BaseModel):
-    method: Method
+    method: str
     path: str
     protocol: str
 
@@ -25,6 +23,7 @@ class Request(BaseModel):
     first_line: FirstLine
     headers: Headers
     body: dict | None = None
+
     sep: ClassVar[str] = "\r\n"
 
     def __str__(self) -> str:

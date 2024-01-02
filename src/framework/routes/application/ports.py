@@ -5,7 +5,7 @@ from typing import Any, NewType, Protocol
 from src.framework.routes.application.dto import ValidatedDTO
 
 
-Decorator = NewType("Decorator", Callable)
+Decorator = NewType("Decorator", Callable)  # type: ignore
 
 
 class IAnnotationValidator(abc.ABC):

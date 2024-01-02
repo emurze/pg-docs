@@ -1,16 +1,8 @@
 import pytest
 
-from src.framework.server.server import (
-    Browser,
-    DefaultConnection,
-    SecureConnection
-)
-from src.framework.server.socket import Socket
+from src.framework.browser.infrastructure.factory import BrowserFactory
 
 
 @pytest.fixture
 def browser():
-    return Browser(
-        Socket(),
-        [DefaultConnection(), SecureConnection()],
-    )
+    return BrowserFactory.get_browser()
