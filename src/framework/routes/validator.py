@@ -3,9 +3,9 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from src.framework.helpers.get_annotations import get_annotations
-from src.framework.helpers.get_sliced_dict import get_sliced_dict
-from src.framework.routes.application.ports import IAnnotationValidator
+from framework.helpers.get_annotations import get_annotations
+from framework.helpers.get_sliced_dict import get_sliced_dict
+from framework.routes.application.ports import IAnnotationValidator
 
 
 class AnnotationValidator(IAnnotationValidator):

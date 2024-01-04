@@ -9,7 +9,7 @@ run:
 restart: clean run
 
 in:
-	docker exec -it db /bin/bash
+	docker exec -it api /bin/bash
 
 # Test
 
@@ -29,3 +29,17 @@ coverage:
 	poetry run coverage run src/main.py && poetry run coverage report
 
 test: black lint types unittests coverage
+
+# Migrations
+
+migrations:
+	docker exec -it api poetry run alembic revision --autogenerate -m "Database creation"
+
+upgrade:
+	docker exec -it api poetry run alembic upgrade ${rev}
+
+downgrade:
+	docker exec -it api poetry run alembic downgrade ${rev}
+
+permissions:
+	chmod 777 src/migrations/versions/*.py

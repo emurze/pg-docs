@@ -2,7 +2,7 @@ import abc
 from collections.abc import Callable
 from typing import Any, NewType, Protocol
 
-from src.framework.routes.application.dto import ValidatedDTO
+from framework.routes.application.dto import ValidatedDTO
 
 
 Decorator = NewType("Decorator", Callable)  # type: ignore

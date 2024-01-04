@@ -1,5 +1,25 @@
 version: "3.8"
 services:
+  api:
+    build: .
+    container_name: 'api'
+    image: 'api:v1'
+    command: >
+      sh -c 'cd src &&
+             poetry run uvicorn app:app --port 8000 --host 0.0.0.0 --reload'
+    networks:
+      - backend
+    ports:
+      - '8080:8000'
+    volumes:
+      - ./src:/service/src
+      - ./tests:/service/tests
+    env_file:
+      - ./env/.app.env
+    restart: unless-stopped
+    depends_on:
+      - pgadmin4
+
   pgadmin4:
     image: dpage/pgadmin4:8.1
     container_name: pgadmin4

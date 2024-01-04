@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from src.framework.routes.application.ports import IRouteService, Decorator
-from src.framework.routes.application.routes import RouteService
-from src.framework.routes.validator import AnnotationValidator
+from framework.routes.application.ports import IRouteService, Decorator
+from framework.routes.application.routes import RouteService
+from framework.routes.validator import AnnotationValidator
 
 
 @dataclass

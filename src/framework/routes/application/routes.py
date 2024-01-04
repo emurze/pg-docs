@@ -3,7 +3,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from src.framework.routes.application.ports import (
+from framework.routes.application.ports import (
     IAnnotationValidator,
     IRouteService,
     Decorator,

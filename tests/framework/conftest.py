@@ -1,5 +1,5 @@
 import pytest
-from fastapi import FastAPI
+from project import FastAPI
 
 from src.framework.container import FirstAPI
 

@@ -1,6 +1,16 @@
-from fastapi import FastAPI
+import enum
 
-app = FastAPI()
+from fastapi import FastAPI
+from fastapi.exceptions import ResponseValidationError
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
+from starlette import status
+from starlette.requests import Request
+from starlette.responses import JSONResponse
+
+app = FastAPI(
+    title="Trading App"
+)
 
 fake_users = [
     {"id": 1, "name": "Vlad"},
@@ -8,25 +18,41 @@ fake_users = [
     {"id": 3, "name": "Dzimka"},
 ]
 
-fake_traces = [
-    {"id": 1, "title": "Trace 1"},
-    {"id": 2, "title": "Trace 2"},
-    {"id": 3, "title": "Trace 3"},
-    {"id": 4, "title": "Trace 4"},
-    {"id": 5, "title": "Trace 5"},
-    {"id": 6, "title": "Trace 6"},
-    {"id": 7, "title": "Trace 7"},
-    {"id": 8, "title": "Trace 8"},
-    {"id": 9, "title": "Trace 9"},
-    {"id": 10, "title": "Trace 10"},
-    {"id": 11, "title": "Trace 11"},
-    {"id": 12, "title": "Trace 12"},
-    {"id": 13, "title": "Trace 13"},
-    {"id": 14, "title": "Trace 14"},
-    {"id": 15, "title": "Trace 15"},
-    {"id": 16, "title": "Trace 16"},
-    {"id": 17, "title": "Trace 17"},
+fake_users2 = [
+    {"id": 1, "name": "Vlad"},
+    {"id": 2, "name": "Lera"},
+    {"id": 3, "name": "Dzimka"},
 ]
+
+fake_trades = [
+    {"id": 1,
+     "title": "Trace 1",
+     "price": 13.23,
+     "statuses": [
+        {"id": 1, "type": "monkey"},
+        {"id": 1, "type": "success"},
+     ]},
+]
+
+
+class StatusType(enum.Enum):
+    failure: str = "failure"
+    pending: str = "pending"
+    success: str = "success"
+
+
+
+class Status(BaseModel):
+    id: int
+    type: StatusType
+
+
+
+class Trade(BaseModel):
+    id: int
+    title: str = Field(min_length=3)
+    price: float = Field(ge=0)
+    statuses: list[Status] | None = None
 
 
 @app.get("/users/{user_id}")
@@ -34,6 +60,33 @@ def get_user(user_id: int) -> list:
     return [user for user in fake_users if user["id"] == user_id]
 
 
-@app.get("/traces")
-def get_traces(limit: int = 100, offset: int = 0) -> list:
-    return fake_traces[offset : limit + offset]
+@app.get("/trades", response_model=list[Trade])
+def get_trades(limit: int = 100, offset: int = 0):
+    return fake_trades
+
+
+@app.patch("/users/{user_id}")
+def update_user_name(user_id: int, new_name: str) -> dict:
+    user = [user for user in fake_users2 if user["id"] == user_id][0]
+    user["name"] = new_name
+    return {
+        "status": 200,
+        "data": user,
+    }
+
+
+@app.post('/trades')
+def add_trades(trades: list[Trade]) -> dict:
+    fake_trades.extend(trades)
+    return {
+        'status': 200,
+        'data': fake_trades,
+    }
+
+
+@app.exception_handler(ResponseValidationError)
+async def validation_exception_error(request: Request, exc: ResponseValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors()})
+    )

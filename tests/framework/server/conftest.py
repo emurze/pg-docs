@@ -1,8 +1,9 @@
 import pytest
 
-from src.framework.browser.infrastructure.factory import BrowserFactory
+from src.framework.web.application.ports import IServer
+from src.framework.web.infrastructure.factories import ServerFactory
 
 
 @pytest.fixture
-def browser():
-    return BrowserFactory.get_browser()
+def server() -> IServer:
+    return ServerFactory.get_server()
